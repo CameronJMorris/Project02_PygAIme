@@ -225,8 +225,8 @@ def get_board_position_from_click(pos):
 def play_game(st=None):
     alpha = "ABCDEFGHIJKLMONPQRSTUVWXYZ"
     if st == "none":
-        agentw = Agent(WHITE, "model/modelw.pth")
-        agentb = Agent(BLACK, "model/modelb.pth")
+        agentw = Agent(WHITE, "model/main_model.pth")
+        agentb = Agent(BLACK, "model/main_model.pth")
     else:
         agentw = Agent(WHITE, "model/"+st+".pth")
         agentb = Agent(BLACK, "model/"+st+".pth")
