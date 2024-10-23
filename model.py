@@ -46,17 +46,14 @@ class QTrainer:
         next_states = torch.stack(next_states)
 
         if len(states.shape) == 1:
-            # In case it's a single sample, unsqueeze to add a batch dimension
             states = torch.unsqueeze(states, 0)
             actions = torch.unsqueeze(actions, 0)
             rewards = torch.unsqueeze(rewards, 0)
             next_states = torch.unsqueeze(next_states, 0)
             dones = (dones,)
 
-        # Predict Q-values with the current states (batch prediction)
-        pred = self.model(states)  # shape: [batch_size, output_size]
+        pred = self.model(states)
 
-        # Clone predictions to create the target tensor
         targ = pred.clone()
 
         for idx in range(len(dones)):
@@ -64,12 +61,8 @@ class QTrainer:
             if not dones[idx]:
                 Q_new += self.gamma * torch.max(self.model(next_states[idx]))
 
-            # Update the target for the action taken
-            #print(targ[idx])
-            #print(int(actions[idx][0]))
             targ[idx][actions[idx][0] * 8 + actions[idx][1]] = Q_new
 
-        # Backpropagation
         self.optimizer.zero_grad()
         loss = self.criterion(targ, pred)
         loss.backward()

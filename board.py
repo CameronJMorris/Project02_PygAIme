@@ -350,6 +350,8 @@ the specified color."""
             #actual play
             self.apply_move((row, col), color)
         #reward += (actual - other)*.2
+        if reward > 199 or reward < -199:
+            reward = int((reward/abs(reward)) * 100)
         return reward, game_over
 
     def get_valid_moves2(self, color):
