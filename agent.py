@@ -135,8 +135,8 @@ def get_letter(white, black, blank):
 
 def train():
     alpha = "ABCDEFGHIJKLMONPQRSTUVWXYZ"
-    agentw = Agent(WHITE, "model/modelbgood.pth")
-    agentb = Agent(BLACK, "model/modelbgood.pth")
+    agentw = Agent(WHITE, "model/main_model.pth")
+    agentb = Agent(BLACK, "model/main_model.pth")
     game = Board()
     w = 0
     b = 0
