@@ -69,7 +69,7 @@ class Agent:
         if len(game.get_valid_moves(color)) == 0:
             return [-2,-2]
 
-        self.epsilon = 2000 - self.number_games
+        self.epsilon = 4000 - self.number_games
         movesl = game.get_valid_moves(color)
         moves2 = game.get_valid_moves2(color)
         moves = [
@@ -133,7 +133,22 @@ def get_letter(white, black, blank):
     else:
         return "t"
 
+def get_number(white, black, blank, color1, color2):
+    if white == black:
+        return "0"
+    if black > white:
+        if color1 == BLACK:
+            return "1"
+        else:
+            return "2"
+    if white > black:
+        if color1 == WHITE:
+            return "1"
+        else:
+            return "2"
+
 def train():
+    pygame.quit()
     alpha = "ABCDEFGHIJKLMONPQRSTUVWXYZ"
     agentw = Agent(WHITE, "model/main_model.pth")
     agentb = Agent(BLACK, "model/main_model.pth")
@@ -157,7 +172,6 @@ def train():
                 b = s.count("b")
                 t = s.count("t")
                 w = s.count("w")
-                #print(s)
                 print("w - " + str(w) + "\tb - " + str(b) + "\tt - " + str(t))
                 s = []
 
@@ -225,8 +239,8 @@ def get_board_position_from_click(pos):
 def play_game(st=None):
     alpha = "ABCDEFGHIJKLMONPQRSTUVWXYZ"
     if st == "none":
-        agentw = Agent(WHITE, "model/modelw.pth")
-        agentb = Agent(BLACK, "model/modelb.pth")
+        agentw = Agent(WHITE, "model/main_model.pth")
+        agentb = Agent(BLACK, "model/main_model.pth")
     else:
         agentw = Agent(WHITE, "model/"+st+".pth")
         agentb = Agent(BLACK, "model/"+st+".pth")
@@ -239,7 +253,7 @@ def play_game(st=None):
             white, black, blank = game.count_stones()
             print("Game: " + format_nums(str(agentb.number_games)) + "\t | w - " + str(white) + "\t | b - " + str(
                 black) + "\t" + get_letter(white, black, blank) + "\t |  ")
-            time.sleep(30)
+            time.sleep(15)
             game.reset()
 
         draw_board(game.board)
@@ -276,12 +290,64 @@ def play_game(st=None):
             white, black, blank = game.count_stones()
             print("Game: " + format_nums(str(agentb.number_games)) + "\t | w - " + str(white) + "\t | b - " + str(
                 black) + "\t" + get_letter(white, black, blank) + "\t |  ")
-            time.sleep(30)
+            time.sleep(15)
             game.reset()
         draw_board(game.board)
         pygame.display.flip()
 
         time.sleep(1.5)
+
+def compare(a1, a2, j=100):
+    color1 = BLACK
+    color2 = WHITE
+    Agent1 = Agent(color1, "model/"+a1+".pth")
+    Agent2 = Agent(color2, "model/"+a2+".pth")
+    ag1 = 0
+    ag2 = 0
+    game = Board()
+    w = 0
+    b = 0
+    t = 0
+    s = []
+    i = 0
+    Agent1.number_games = 1
+    Agent2.number_games = 1
+    while Agent1.number_games <= j:
+        final_move = Agent1.get_action(game, color1)
+        reward, done = game.play_step(color1, final_move[0], final_move[1])
+        if done:
+            white, black, empty = game.count_stones()
+            s.append(get_number(white, black, empty, color1, color2))
+            if ((Agent1.number_games) % 100 == 0 and Agent1.number_games != 0):
+                a1 = s.count("1")
+                t = s.count("0")
+                a2 = s.count("2")
+                print("a1 - " + str(a1) + "\ta2 - " + str(a2) + "\tt - " + str(t))
+                s = []
+            Agent1.number_games += 1
+            Agent2.number_games += 1
+            i = color1
+            color1 = color2
+            color2 = i
+
+            game.reset()
+        final_move = Agent2.get_action(game, color2)
+        reward, done = game.play_step(color2, final_move[0], final_move[1])
+        if done:
+            white, black, empty = game.count_stones()
+            s.append(get_number(white, black, empty, color1, color2))
+            if ((Agent1.number_games) % 100 == 0 and Agent1.number_games != 0):
+                a1 = s.count("1")
+                t = s.count("0")
+                a2 = s.count("2")
+                print("a1 - " + str(a1) + "\ta2 - " + str(a2) + "\tt - " + str(t))
+                s = []
+            i = color1
+            color1 = color2
+            color2 = i
+            Agent1.number_games += 1
+            Agent2.number_games += 1
+            game.reset()
 
 if __name__ == '__main__':
     s = input("Would you like to train or play: ")
@@ -290,3 +356,11 @@ if __name__ == '__main__':
     if s == "play":
         s = input("Which model would you like to play: ")
         play_game(s)
+    if s == "compare":
+        a1= input("Which agent would you like to compare: ")
+        a2= input("Which agent would you like to compare: ")
+        i = int(input("How many games would you like to simulate: "))
+        if i == 0:
+            compare(a1, a2)
+        else:
+            compare(a1, a2, i)
