@@ -3,6 +3,8 @@
 Game logic.
 """
 
+#everything below the line is mine, and everything above it is from Humberto Henrique Campos Pinheiro
+
 from config import WHITE, BLACK, EMPTY, NOTHING, LOSE, WIN, TIE
 from copy import deepcopy
 
@@ -99,7 +101,6 @@ class Board:
         self.valid_moves = places
         return places
 
-    #********
     def apply_move(self, move, color):
         """ Determine if the move is correct and apply the changes in the game.
         """
@@ -262,6 +263,7 @@ the specified color."""
 
 #-------------------------------------------------------------------------------
 
+    #returns whether the color of the team inputted won the game, lost, tied, or nothing happened ie. the game si still going on
     def game_state(self, color):
         black = 0
         white = 0
@@ -289,6 +291,7 @@ the specified color."""
                 return TIE
         return NOTHING
 
+    #sets the board back to the original set up with the blank board and then adds the starting tiles
     def reset(self):
         self.board = [[0, 0, 0, 0, 0, 0, 0, 0],
                       [0, 0, 0, 0, 0, 0, 0, 0],
@@ -304,13 +307,14 @@ the specified color."""
         self.board[4][4] = WHITE
         self.valid_moves = []
 
+    # plays the move if the game is not over and returns whether the game is over and the rewards
     def play_step(self, color, row, col):
         game_over = False
 
 
         #reward stuff
         reward = 0
-        white, black, empty = self.count_stones()
+        white, black, empty = self.count_stones() # counts how many each color has
         actual = 0
         other = 0
         if color == BLACK:
@@ -319,7 +323,7 @@ the specified color."""
         if color == WHITE:
             actual = white
             other = black
-        if self.game_state(color) != NOTHING:
+        if self.game_state(color) != NOTHING: #if the game is over
             if self.game_state(color) == WIN:
                 reward += 100
                 #reward += actual - other
@@ -348,12 +352,13 @@ the specified color."""
         else:
 
             #actual play
-            self.apply_move((row, col), color)
+            self.apply_move((row, col), color) #plays the move if the game is not over
         #reward += (actual - other)*.2
-        if reward > 199 or reward < -199:
+        if reward > 199 or reward < -199: # sometimes it was giving a reward for 200 for some reason, I think I fixed it though this is to make sure that it gives normal rewards
             reward = int((reward/abs(reward)) * 100)
         return reward, game_over
 
+    # returns an array of 1s as the valid moves and 0s as the invalid moves
     def get_valid_moves2(self, color):
         a = [
         [0,0,0,0,0,0,0,0],
@@ -372,6 +377,7 @@ the specified color."""
         #print(a)
         return a
 
+    # gets the board as a list to make it easier to use for getting the state for the model
     def get_as_list(self):
         l = []
         for i in range(8):
